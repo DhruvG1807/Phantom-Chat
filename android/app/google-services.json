@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "763293573874",
+    "project_id": "phantomchat-b57f0",
+    "storage_bucket": "phantomchat-b57f0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763293573874:android:6ba7b54804ba632725666b",
+        "android_client_info": {
+          "package_name": "com.phantom.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "763293573874-p1upe7m16cubcqrtfo3oitnj55alrrgt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.phantom.app",
+            "certificate_hash": "c8e3e8a95a83836b5227ac6e5e5a5a405dd34e83"
+          }
+        },
+        {
+          "client_id": "763293573874-64ie8i38hr94ee4bf9lamm0auqkdq614.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDArGve3n_rXoMdzT-lJP3TgEmQUPEQGLI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "763293573874-64ie8i38hr94ee4bf9lamm0auqkdq614.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "763293573874-2702geqdelnipnju6ic8l48v2argv58i.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.phantomChat"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
