@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart';
 
+import '../helper/db_helper.dart';
 import '../models/chat_user.dart';
 import '../models/message.dart';
 import 'notification_access_token.dart';
@@ -278,6 +279,35 @@ class APIs {
         .snapshots();
   }
 
+  static Stream<List<Message>> getMessages(ChatUser chatUser) async* {
+    Stream<QuerySnapshot<Map<String, dynamic>>> firebaseMessagesStream = getAllMessages(chatUser);
+    await for (QuerySnapshot<Map<String, dynamic>> snapshot in firebaseMessagesStream) {
+      List<Message> firebaseMessages = snapshot.docs
+          .map((doc) => Message.fromJson(doc.data()))
+          .toList();
+
+      // Save messages locally and delete from Firebase
+      for (Message message in firebaseMessages) {
+        await DBHelper.insertMessage(message);
+        // await firestore
+        //     .collection('chats/${getConversationID(chatUser.id)}/messages/')
+        //     .doc(message.sent)
+        //     .delete();
+      }
+
+      // Fetch messages from local database
+      List<Message> localMessages = await DBHelper.getMessages();
+      List<Message> localConversationMessages = localMessages
+          .where((message) {
+            return (message.toId == chatUser.id || message.fromId == chatUser.id);
+          })
+          .toList();
+
+      // Yield combined messages
+      yield localConversationMessages;
+    }
+  }
+
   // for sending message
   static Future<void> sendMessage(
       ChatUser chatUser, String msg, Type type) async {
@@ -286,6 +316,7 @@ class APIs {
 
     //message to send
     final Message message = Message(
+        id: time,
         toId: chatUser.id,
         msg: msg,
         read: '',
@@ -295,16 +326,23 @@ class APIs {
 
     final ref = firestore
         .collection('chats/${getConversationID(chatUser.id)}/messages/');
-    await ref.doc(time).set(message.toJson()).then((value) =>
-        sendPushNotification(chatUser, type == Type.text ? msg : 'image'));
+    await ref.doc(time).set(message.toJson()).then((value) async {
+      await DBHelper.insertMessage(message);
+
+      // sendPushNotification(chatUser, type == Type.text ? msg : 'image');
+    });
   }
 
   //update read status of message
   static Future<void> updateMessageReadStatus(Message message) async {
-    firestore
-        .collection('chats/${getConversationID(message.fromId)}/messages/')
-        .doc(message.sent)
-        .update({'read': DateTime.now().millisecondsSinceEpoch.toString()});
+    // firestore
+    //     .collection('chats/${getConversationID(message.fromId)}/messages/')
+    //     .doc(message.sent)
+    //     .update({'read': DateTime.now().millisecondsSinceEpoch.toString()});
+    await firestore
+            .collection('chats/${getConversationID(message.fromId)}/messages/')
+            .doc(message.sent)
+            .delete();
   }
 
   //get only last message of a specific chat

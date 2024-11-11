@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:phantom_chat/helper/db_helper.dart';
 
 import '../api/apis.dart';
 import '../helper/my_date_util.dart';
@@ -84,7 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 Expanded(
                   child: StreamBuilder(
-                    stream: APIs.getAllMessages(widget.user),
+                    stream: APIs.getMessages(widget.user),
                     builder: (context, snapshot) {
                       switch (snapshot.connectionState) {
                         //if data is loading
@@ -95,20 +96,19 @@ class _ChatScreenState extends State<ChatScreen> {
                         //if some or all data is loaded then show it
                         case ConnectionState.active:
                         case ConnectionState.done:
-                          final data = snapshot.data?.docs;
-                          _list = data
-                                  ?.map((e) => Message.fromJson(e.data()))
-                                  .toList() ??
-                              [];
+                          // final data = snapshot.data?.docs;
 
-                          if (_list.isNotEmpty) {
+                          _list = snapshot.data ?? [];
+                          List<Message> reversedList = _list.reversed.toList();
+
+                          if (reversedList.isNotEmpty) {
                             return ListView.builder(
                                 reverse: true,
-                                itemCount: _list.length,
+                                itemCount: reversedList.length,
                                 padding: EdgeInsets.only(top: mq.height * .01),
                                 physics: const BouncingScrollPhysics(),
                                 itemBuilder: (context, index) {
-                                  return MessageCard(message: _list[index]);
+                                  return MessageCard(message: reversedList[index]);
                                 });
                           } else {
                             return const Center(
@@ -259,44 +259,44 @@ class _ChatScreenState extends State<ChatScreen> {
                   )),
 
                   //pick image from gallery button
-                  IconButton(
-                      onPressed: () async {
-                        final ImagePicker picker = ImagePicker();
+                  // IconButton(
+                  //     onPressed: () async {
+                  //       final ImagePicker picker = ImagePicker();
 
-                        // Picking multiple images
-                        final List<XFile> images =
-                            await picker.pickMultiImage(imageQuality: 70);
+                  //       // Picking multiple images
+                  //       final List<XFile> images =
+                  //           await picker.pickMultiImage(imageQuality: 70);
 
-                        // uploading & sending image one by one
-                        for (var i in images) {
-                          log('Image Path: ${i.path}');
-                          setState(() => _isUploading = true);
-                          await APIs.sendChatImage(widget.user, File(i.path));
-                          setState(() => _isUploading = false);
-                        }
-                      },
-                      icon: const Icon(Icons.image,
-                          color: Colors.blueAccent, size: 26)),
+                  //       // uploading & sending image one by one
+                  //       for (var i in images) {
+                  //         log('Image Path: ${i.path}');
+                  //         setState(() => _isUploading = true);
+                  //         await APIs.sendChatImage(widget.user, File(i.path));
+                  //         setState(() => _isUploading = false);
+                  //       }
+                  //     },
+                  //     icon: const Icon(Icons.image,
+                  //         color: Colors.blueAccent, size: 26)),
 
-                  //take image from camera button
-                  IconButton(
-                      onPressed: () async {
-                        final ImagePicker picker = ImagePicker();
+                  // //take image from camera button
+                  // IconButton(
+                  //     onPressed: () async {
+                  //       final ImagePicker picker = ImagePicker();
 
-                        // Pick an image
-                        final XFile? image = await picker.pickImage(
-                            source: ImageSource.camera, imageQuality: 70);
-                        if (image != null) {
-                          log('Image Path: ${image.path}');
-                          setState(() => _isUploading = true);
+                  //       // Pick an image
+                  //       final XFile? image = await picker.pickImage(
+                  //           source: ImageSource.camera, imageQuality: 70);
+                  //       if (image != null) {
+                  //         log('Image Path: ${image.path}');
+                  //         setState(() => _isUploading = true);
 
-                          await APIs.sendChatImage(
-                              widget.user, File(image.path));
-                          setState(() => _isUploading = false);
-                        }
-                      },
-                      icon: const Icon(Icons.camera_alt_rounded,
-                          color: Colors.blueAccent, size: 26)),
+                  //         await APIs.sendChatImage(
+                  //             widget.user, File(image.path));
+                  //         setState(() => _isUploading = false);
+                  //       }
+                  //     },
+                  //     icon: const Icon(Icons.camera_alt_rounded,
+                  //         color: Colors.blueAccent, size: 26)),
 
                   //adding some space
                   SizedBox(width: mq.width * .02),
